@@ -1,0 +1,55 @@
+f = @(x) x.^3 - x - 2;
+fplot(f,[-1,3])
+grid on
+title('f(x) = x^3-x-2')
+
+function xn = regula_falsi(f, a, b, epsilon, Nmax)
+    
+    if f(a) * f(b) >= 0
+        error('no hay cambio de signo');
+    end
+
+    x_prev = []; %inicializar
+
+    fprintf('\n%-4s | %-10s | %-10s | %-10s | %-12s | %-12s | %-12s | %-10s\n','n', 'a', 'b', 'xn', 'f(a)', 'f(b)', 'f(xn)', 'en');
+    fprintf('%s\n', repmat('-', 1, 95));
+
+    for n = 0:Nmax 
+        fa = f(a);
+        fb = f(b);
+        xn = (a * fb - b * fa) / (fb - fa); %calculo de c
+        fxn = f(xn);
+
+        if n >= 1
+            en = abs(xn - x_prev);
+            fprintf('%-4d | %-10.6f | %-10.6f | %-10.6f | %-12.6f | %-12.6f | %-12.6f | %-10.6f\n', n, a, b, xn, fa, fb, fxn, en);
+            if fxn == 0 || en <= epsilon %verificar la convergencia
+                return;
+            end
+        else
+            fprintf('%-4d | %-10.6f | %-10.6f | %-10.6f | %-12.6f | %-12.6f | %-12.6f | %-10s\n', n, a, b, xn, fa, fb, fxn, '-');
+            if fxn == 0
+                return;
+            end
+        end
+
+        if fa * fxn < 0 %actualizar el intervalo
+            b = xn;
+        else 
+            a = xn;
+        end
+
+        x_prev = xn;
+    end
+
+    warning('Se alcanzó el número máximo de iteraciones sin convergencia.');
+
+end
+
+a = 1;
+b = 2;
+epsilon = 1e-5;
+Nmax = 100;   
+
+raiz = regula_falsi(f, a, b, epsilon, Nmax);
+fprintf('La raíz aproximada es: %.15f\n', raiz);
